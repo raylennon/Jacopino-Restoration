@@ -9,6 +9,12 @@ run ./kdtree_example/vlfeat-0.9.21/toolbox/vl_setup
 %% load the images into matlab matrices
 ground_truth = imread('JAC3.png');
 crack = imread('JAC3_crackmap2.png');
+
+%invert crackmap if necessary
+if sum(crack(:) == 0) > sum(crack(:) == 255)
+    crack = 255 - crack;
+end
+
 %if crack is already 3d
 %crack = crack(:,:,3);
 [m,n] = size(crack);        % size of crackmap
