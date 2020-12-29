@@ -386,8 +386,7 @@ else
     save([name{1} '_threshold.mat'],'T');
 end
 save([name{1} '_crackmap.mat'],'crackmap','im_marked','ridge','ridgeParams');
-imwrite(crackmap,[name{1} '_crackmap.png']);
-
+imwrite(im2uint16(~crackmap)*255,[name{1} '_crackmap.png'] ,'Alpha', im2uint16(crackmap));
 
 % parameter edit boxes for crack detection
 function editParam1_Callback(hObject, eventdata, handles)
