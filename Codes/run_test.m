@@ -1,7 +1,7 @@
 clear
 clc
 
-cd 'C:/Users/rayle/OneDrive - Duke University/Documents/Classes/JACOPINO/Codes'
+cd 'path/to/codes'
 
 %addpath('.\pic_inpaint')
 addpath('kdtree_example')
@@ -17,13 +17,15 @@ end
 
 %if crack is already 3d
 %crack = crack(:,:,3);
-[m,n] = size(crack);        % size of crackmap
+
 %% only used to develop code
 % crop images
 %ground_truth = ground_truth(1:1340,1:1856,:);
 %ground_truth = ground_truth(1:237,1:361,:);
 %crack = crack(1:1340,1:1856);
 %crack = crack(1:237,1:361);
+
+[m,n] = size(crack);        % size of crackmap
 
 SE = strel('square',3);
 crack2 = ~imdilate(~crack, SE);
@@ -36,6 +38,7 @@ crack = crack < 255; % this crack matrix is nonzero at unknown region
 crack_3d = repmat(crack,[1 1 3]);
 raw = ground_truth.*~crack_3d;  % raw is the "true" input image
 f = raw; % a copy of the true input for processing
+
 %% only used to develop code
 %  filling the crack region with random value
 %  use gaussian noise with the mean and std determined in the known pixel
@@ -46,9 +49,9 @@ f = raw; % a copy of the true input for processing
 %    f(:,:,band) = temp;
 %end
 %% visual display of image, image with crackmap
-figure(1); imshow(ground_truth); title('ground truth')
-figure(2); imshow(raw); title('raw input')
-figure(3); imshow(f); title('raw input plus random pixel inpainting')
+%figure(1); imshow(ground_truth); title('ground truth')
+%figure(2); imshow(raw); title('raw input')
+%figure(3); imshow(f); title('raw input plus random pixel inpainting')
 %% extract patches
 % patch size: use odd number
 % this is one of the inputs that can be changed
@@ -113,7 +116,7 @@ tic
 recover = patch2image(newPatch,ps,m,n);
 figure;imshow(recover);title('recover')
 toc
-imwrite(recover, 'inpainted_patch_3.2.png')
+imwrite(recover, 'inpainted_patch.png')
 
 
 
