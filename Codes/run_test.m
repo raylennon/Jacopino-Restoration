@@ -1,23 +1,27 @@
 clear
 clc
 
-cd 'path/to/codes'
+cd 'file path'
 
 %addpath('.\pic_inpaint')
 addpath('kdtree_example')
 run ./kdtree_example/vlfeat-0.9.21/toolbox/vl_setup
 %% load the images into matlab matrices
-ground_truth = imread('JAC3.png');
-crack = imread('JAC3_crackmap2.png');
+[img, map, alpha] = imread('ground_truth.png');
+ground_truth = imread('ground_truth.png');
+%ground_truth = imread('Section 3 Image Jessica.png');
+crack = imread('crackmap.png');
 
 %invert crackmap if necessary
 if sum(crack(:) == 0) > sum(crack(:) == 255)
     crack = 255 - crack;
 end
 
+%ground_truth = ground_truth(1:400, 1:400, :);
+%alpha = alpha(1:400, 1:400, :);
+%crack = crack(1:400, 1:400);
 %if crack is already 3d
 %crack = crack(:,:,3);
-
 %% only used to develop code
 % crop images
 %ground_truth = ground_truth(1:1340,1:1856,:);
@@ -38,7 +42,6 @@ crack = crack < 255; % this crack matrix is nonzero at unknown region
 crack_3d = repmat(crack,[1 1 3]);
 raw = ground_truth.*~crack_3d;  % raw is the "true" input image
 f = raw; % a copy of the true input for processing
-
 %% only used to develop code
 %  filling the crack region with random value
 %  use gaussian noise with the mean and std determined in the known pixel
@@ -63,7 +66,7 @@ ps = 9;
                               
 % the next line output the coloction of patches and a logical matrix
 % indicating whether an entry in "patches" is crack or not
-[patches, cracks] = extract_patches(f,crack_3d,ps);
+[patches, ground_truth_patches, cracks, transparent] = extract_patches(f,crack_3d,ps,alpha, ground_truth);
 newPatch = zeros(size(patches));
 scale = 1;
 patch_with_coor = zeros(size(patches,1)+2,size(patches,2));
@@ -74,12 +77,12 @@ patch_with_coor(end,:) = reshape(repmat(1:n,m,1),1,[])*scale;
 %fprintf('Patch size is %d.\n',ps);
 %fprintf('Scale is %d.\n',scale);
 
-%% compute distance and find neaerest neighbors 
+%% compute distance and find nearest neighbors 
  %number of nearest neighbors
  %this is one of the inputs can be changed
  %increase when cracks are thicker 
  %Runtime increases as numNb increases 
-numNb = 150; 
+numNb = 100; 
 
 %increase numNb to 150 or 200
 %maxCompare usually does not need to be changed 
@@ -95,8 +98,8 @@ numPatch = size(idx,2);
 dist(1,:) = []; % throwing away the nearest patch (itself)
 idx(1,:) = [];
 for ii = 1:numPatch
-    if nnz(cracks(:,ii))==0
-        newPatch(:,ii)= patches(:,ii);
+    if nnz(cracks(:,ii))==0 || transparent(ii) == 1
+        newPatch(:,ii)= ground_truth_patches(:,ii);
     else
         newPatch(:,ii)= patches(:,ii);
         batch = patches(:,idx(:,ii));
@@ -107,7 +110,11 @@ for ii = 1:numPatch
         total_weight = ~crack_batch*weights;
         batch(crack_batch) = 0;
         weighted_sum = batch*weights;
-        newPatch(cracks(:,ii),ii) = weighted_sum./total_weight;                
+        if ~ismember(1, isnan(weighted_sum./total_weight))
+            newPatch(cracks(:,ii),ii) = weighted_sum./total_weight;     
+        else
+            newPatch(:,ii) = ground_truth_patches(:,ii);
+        end
     end
 end
 
@@ -116,7 +123,3 @@ tic
 recover = patch2image(newPatch,ps,m,n);
 figure;imshow(recover);title('recover')
 toc
-imwrite(recover, 'inpainted_patch.png')
-
-
-
