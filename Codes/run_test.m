@@ -1,16 +1,18 @@
 clear
 clc
 
-cd 'file path'
+%cd 'file path'
 
 %addpath('.\pic_inpaint')
 addpath('kdtree_example')
 run ./kdtree_example/vlfeat-0.9.21/toolbox/vl_setup
 %% load the images into matlab matrices
-[img, map, alpha] = imread('ground_truth.png');
-ground_truth = imread('ground_truth.png');
+[img, map, alpha] = imread('/path/to/base/image.png');
+ground_truth = imread('/path/to/base/image.png');
 %ground_truth = imread('Section 3 Image Jessica.png');
-crack = imread('crackmap.png');
+%crack = imread('../Images/Crackmaps/Jacopino_13_crackmap.png');
+crack = imread('/path/to/crackmap.png');
+crack = 255*uint8(imcomplement(crack)); % crucial for compatability with GUI
 
 %invert crackmap if necessary
 if sum(crack(:) == 0) > sum(crack(:) == 255)
@@ -39,6 +41,7 @@ ground_truth = im2double(ground_truth);
 %select the crack region, deselect the background
 %if the background is white, select crack<255
 crack = crack < 255; % this crack matrix is nonzero at unknown region
+
 crack_3d = repmat(crack,[1 1 3]);
 raw = ground_truth.*~crack_3d;  % raw is the "true" input image
 f = raw; % a copy of the true input for processing
@@ -73,7 +76,6 @@ patch_with_coor = zeros(size(patches,1)+2,size(patches,2));
 patch_with_coor(end - 1,:) = repmat(1:m,1,n)*scale;
 patch_with_coor(end,:) = reshape(repmat(1:n,m,1),1,[])*scale;
 
-
 %fprintf('Patch size is %d.\n',ps);
 %fprintf('Scale is %d.\n',scale);
 
@@ -82,7 +84,7 @@ patch_with_coor(end,:) = reshape(repmat(1:n,m,1),1,[])*scale;
  %this is one of the inputs can be changed
  %increase when cracks are thicker 
  %Runtime increases as numNb increases 
-numNb = 100; 
+numNb = 125; 
 
 %increase numNb to 150 or 200
 %maxCompare usually does not need to be changed 
@@ -91,7 +93,6 @@ tic
 
 %use knn (kd-tree function to find k (numNb) nearest neighbors
 [idx,dist]=knn(patch_with_coor,numNb,maxCompare);
-toc
 numPatch = size(idx,2);
 
 %% Calculate weighted average
@@ -117,7 +118,7 @@ for ii = 1:numPatch
         end
     end
 end
-
+toc
 %% transform patch back into image
 tic
 recover = patch2image(newPatch,ps,m,n);

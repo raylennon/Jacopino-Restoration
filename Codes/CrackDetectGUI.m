@@ -386,8 +386,8 @@ else
     save([name{1} '_threshold.mat'],'T');
 end
 save([name{1} '_crackmap.mat'],'crackmap','im_marked','ridge','ridgeParams');
-% imwrite(crackmap,[name{1} '_crackmap.png']); % does not do inversion
-imwrite(im2uint16(~crackmap)*255,[name{1} '_crackmap.png'] ,'Alpha', im2uint16(crack));
+imwrite(crackmap,[name{1} '_crackmap.png']); % does not do inversion, leaves to run_test
+%imwrite(im2uint8(~crackmap)*255,[name{1} '_crackmap.png'] ,'Alpha', im2uint16(crackmap));
 
 % parameter edit boxes for crack detection
 function editParam1_Callback(hObject, eventdata, handles)
