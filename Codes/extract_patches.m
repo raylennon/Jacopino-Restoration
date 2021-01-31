@@ -28,7 +28,7 @@ count = 0;
 f = waitbar(0, 'Please wait...');
 for jj=1:n
     for ii = 1:m
-        waitbar
+        %waitbar
          percent_progress = jj/n;
          to_display = strcat('jj', num2str(jj), ' out of ', num2str(n), ' percent ', num2str(percent_progress));
          waitbar(percent_progress, f, to_display);
